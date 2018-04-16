@@ -1,0 +1,25 @@
+.board {
+  position: relative;
+  width: 260px;
+  height: 500px;
+  border: 1px solid black;
+  overflow: hidden;
+
+  &.overlay {
+    background: gray;
+  }
+
+  button {
+    position: relative;
+    left: 100px;
+    top: 40%;
+  }
+}
+
+.square {
+  display: inline-block;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: red;
+}
