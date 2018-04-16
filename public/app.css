@@ -4,16 +4,16 @@
   height: 500px;
   border: 1px solid black;
   overflow: hidden;
+}
 
-  &.overlay {
-    background: gray;
-  }
+.board.overlay {
+  background: #eaeaea;
+}
 
-  button {
-    position: relative;
-    left: 100px;
-    top: 40%;
-  }
+.board button {
+  position: relative;
+  left: 100px;
+  top: 40%;
 }
 
 .square {

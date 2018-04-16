@@ -1,5 +1,5 @@
-import React from 'react'
+import React from "react";
 
-export default ({score}) => (
-  <h1>Votre score : {score}</h1>
-)
+export default ({ score }) => (
+  <h2 className="title subtitle">Votre score : {score}</h2>
+);

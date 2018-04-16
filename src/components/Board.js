@@ -25,7 +25,7 @@ class Board extends React.Component {
   }
 
   launchGame() {
-    this.props.startGame()
+    this.props.startGame();
   }
 
   handleKeyDown(event) {
@@ -47,15 +47,19 @@ class Board extends React.Component {
   }
 
   render() {
-    const { pieces, status} = this.props
+    const { pieces, status } = this.props;
     return (
-      <div className={'board' + (status === 'ONGOING' ? '' : ' overlay')} onKeyDown={this.handleKeyDown} tabIndex="0">
+      <div
+        className={"board" + (status === "ONGOING" ? "" : " overlay")}
+        onKeyDown={this.handleKeyDown}
+        tabIndex="0"
+      >
         {status === "ONGOING" ? (
-          pieces.map((piece, index) => (
-            <Square key={index} {...piece} />
-          ))
+          pieces.map((piece, index) => <Square key={index} {...piece} />)
         ) : (
-          <button onClick={this.launchGame}>Start!</button>
+            <button className="button is-success" onClick={this.launchGame}>
+            Start!
+          </button>
         )}
       </div>
     );
