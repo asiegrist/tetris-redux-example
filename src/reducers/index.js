@@ -1,38 +1,36 @@
-import { combineReducers } from "redux";
-import * as BOARD from "../constants/board";
+import { combineReducers } from 'redux'
+import R from 'ramda'
+import * as BOARD from '../constants/board'
 
-import piece from "./piece";
-import grid from "./grid";
+import pieces from './pieces'
 import score from "./score";
 import status from "./status";
 
 const rootReducer = combineReducers({
-  piece,
-  grid,
+  pieces,
   score,
-  status
-});
+  status,
+})
 
 export const getAllPieces = state => {
-  const grid = state.grid.reduce((acc, line, row) => {
-    return line.reduce((acc, square, column) => {
-      acc.push({
-        ...square,
-        top: row * BOARD.squareEdge,
-        left: column * BOARD.squareEdge
-      });
-
-      return acc;
-    }, acc);
-  }, []);
-
-  const piece = state.piece.map(square => ({
+  const pieces = R.map(square => ({
     ...square,
     top: square.top * BOARD.squareEdge,
     left: square.left * BOARD.squareEdge
-  }));
+  }))(state.pieces);
 
-  return grid.concat(piece);
+  return R.dropLast(4)(pieces);
 };
 
-export default rootReducer;
+export const getPreview = state => {
+  const pieces = R.map(square => ({
+    ...square,
+    top: square.top * BOARD.squareEdge,
+    left: square.left * BOARD.squareEdge - 50
+  }))(R.takeLast(4)(state.pieces));
+  
+  return pieces;
+};
+
+
+export default rootReducer

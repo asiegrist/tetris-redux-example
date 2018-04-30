@@ -2,22 +2,23 @@ import React from "react";
 import PropTypes from "prop-types";
 
 import Square from "./Square";
+import Overlay from "./Overlay";
 
-class Board extends React.Component {
+class Board extends React.PureComponent {
   constructor(props) {
     super(props);
+    this.board = React.createRef();
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.launchGame = this.launchGame.bind(this);
   }
 
   componentDidMount() {
-    this.timerID = setInterval(() => {
+    /*this.timerID = setInterval(() => {
       this.props.moveIfPossible({ top: 1 });
-    }, 1000);
-
+    }, 1000);*/
     /*setTimeout(() => {
       clearInterval(this.timerID);
-    }, 40000);*/
+    }, 10000);*/
   }
 
   componentWillUnmount() {
@@ -25,7 +26,12 @@ class Board extends React.Component {
   }
 
   launchGame() {
-    this.props.startGame();
+    console.log('launch')
+    this.props.launchGame();
+    this.timerID = setInterval(() => {
+      this.props.moveIfPossible({ top: 1 });
+    }, 1000);
+    this.board.current.focus();
   }
 
   handleKeyDown(event) {
@@ -53,14 +59,11 @@ class Board extends React.Component {
         className={"board" + (status === "ONGOING" ? "" : " overlay")}
         onKeyDown={this.handleKeyDown}
         tabIndex="0"
+        ref={this.board}
       >
         {status === "ONGOING" ? (
           pieces.map((piece, index) => <Square key={index} {...piece} />)
-        ) : (
-            <button className="button is-success" onClick={this.launchGame}>
-            Start!
-          </button>
-        )}
+        ) : (<Overlay status={status} onClick={this.launchGame} />)}
       </div>
     );
   }

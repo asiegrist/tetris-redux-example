@@ -2,7 +2,7 @@ import React from "react";
 
 import Hello from "./Hello";
 import DynamicBoard from "../containers/DynamicBoard";
-import DynamicScore from "../containers/DynamicScore";
+import DynamicFeedback from "../containers/DynamicFeedback";
 
 const styles = {
   fontFamily: "sans-serif",
@@ -17,7 +17,7 @@ const App = () => (
         <DynamicBoard />
       </div>
       <div className="column">
-        <DynamicScore />
+        <DynamicFeedback />
       </div>
     </div>
   </div>

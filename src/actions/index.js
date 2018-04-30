@@ -3,110 +3,127 @@ import R from "ramda";
 import * as patterns from "../constants/patterns";
 import * as BOARD from "../constants/board";
 
-export const START_GAME = "START_GAME"
+export const START_GAME = "START_GAME";
+export const STOP_GAME = "STOP_GAME";
 export const CREATE_PIECE = "CREATE_PIECE";
-export const MOVE_PIECE_DOWN = "MOVE_PIECE_DOWN";
 export const MOVE_PIECE = "MOVE_PIECE";
 export const ROTATE_PIECE = "ROTATE_PIECE";
-export const IMMOBILIZE_PIECE = "IMMOBILIZE_PIECE";
 export const VALIDATE_ROW = "VALIDATE_ROW";
 
-export const createPiece = (pattern, color) => ({
+export const createPiece = pattern => ({
   type: CREATE_PIECE,
   composition: pattern.map(part => ({
     ...part,
     top: part.top,
     left: part.left + BOARD.middle
-  })),
-  color
+  }))
 });
 
-export const movePieceDown = () => ({
-  type: MOVE_PIECE_DOWN
-});
-
-export const movePiece = left => ({
+export const movePiece = (piece, top, left) => ({
   type: MOVE_PIECE,
-  left: left
-});
-
-export const rotatePiece = () => ({
-  type: ROTATE_PIECE
-});
-
-export const immobilizePiece = piece => ({
-  type: IMMOBILIZE_PIECE,
+  top,
+  left,
   piece
 });
 
-export const validateRow = row => ({
+export const rotatePiece = piece => ({
+  type: ROTATE_PIECE,
+  piece
+});
+
+export const validateRow = (pieces, row) => ({
   type: VALIDATE_ROW,
+  pieces,
   row
 });
 
 export const startGame = () => ({
-  type: START_GAME,
+  type: START_GAME
 });
+
+export const stopGame = () => ({
+  type: STOP_GAME
+});
+
+export const launchGame = () => dispatch => {
+  dispatch(createPiece(generatePiece()));
+  dispatch(startGame());
+  dispatch(createPiece(generatePiece()));
+};
 
 export const moveIfPossible = ({ top = 0, left = 0 }) => (
   dispatch,
   getState
 ) => {
-  let { piece, grid } = getState();
-  if (!piece.length) {
-    return dispatch(createPiece(...generatePieceStyle()));
-  }
+  let pieces = R.dropLast(4)(getState().pieces);
+  let [grid, piece] = R.splitAt(-4)(pieces);
 
   const isPositionEmpty = piece
     .map(
       square =>
         inRange(BOARD.origin, BOARD.maxLeft, square.left + left) &&
         inRange(BOARD.origin, BOARD.maxTop, Math.max(square.top + top, 0))
-          ? grid[Math.max(square.top + top, 0)][square.left + left]
+          ? findSquare(Math.max(square.top + top, 0), square.left + left)(grid)
           : true
     )
     .every(v => !v);
 
   if (isPositionEmpty) {
-    return top ? dispatch(movePieceDown()) : dispatch(movePiece(left));
+    return dispatch(movePiece(piece, top, left));
   }
 
   if (top) {
-    dispatch(immobilizePiece(piece));
-    dispatch(createPiece(...generatePieceStyle()));
-
     const rowImpacted = piece.reduce((uniqTop, square) => {
       uniqTop.includes(square.top) ? uniqTop : uniqTop.push(square.top);
       return uniqTop;
     }, []);
 
-    grid = getState().grid;
+    if (rowImpacted.includes(-1)) {
+      return dispatch(stopGame());
+    }
 
     rowImpacted.forEach(row => {
-      const isLineComplete = R.none(R.isNil)(grid[Math.max(row, 0)]);
+      const linePieces = R.filter(R.propEq("top", row))(pieces);
+      const isLineComplete = linePieces.length === BOARD.maxLeft;
+
       if (isLineComplete) {
-        return dispatch(validateRow(row));
+        dispatch(validateRow(linePieces, row));
       }
     });
+
+    dispatch(createPiece(generatePiece()));
   }
 };
 
 export const rotateIfPossible = () => (dispatch, getState) => {
-  let { piece, grid } = getState();
+  let pieces = R.dropLast(4)(getState().pieces);
+  let [grid, piece] = R.splitAt(-4)(pieces);
 
   const center = R.find(R.prop("isCenter"), piece);
+  if (!center) {
+    return;
+  }
+
   const isPositionEmpty = R.all(square => {
     const { top, left } = rotate(center, square);
     return inRange(BOARD.origin, BOARD.maxLeft, left) &&
       inRange(BOARD.origin, BOARD.maxTop, Math.max(top, 0))
-      ? !grid[Math.max(top, 0)][left]
+      ? !findSquare(Math.max(top, 0), left)(grid)
       : false;
   })(piece);
 
   if (isPositionEmpty) {
-    dispatch(rotatePiece());
+    dispatch(rotatePiece(piece));
   }
 };
+
+const findSquare = (top, left) =>
+  R.find(
+    R.whereEq({
+      top,
+      left
+    })
+  );
 
 const rotate = (center, square) => {
   const top = square.left - center.left + center.top;
@@ -114,21 +131,11 @@ const rotate = (center, square) => {
   return { top, left };
 };
 
-const generatePieceStyle = () => {
+const generatePiece = () => {
   const patternsList = Object.values(patterns);
-  const colors = [
-    "red",
-    "lightskyblue",
-    "gold",
-    "coral",
-    "orange",
-    "green",
-    "violet"
-  ];
 
   const patternIndex = getRandomInt(patternsList.length);
-  const colorIndex = getRandomInt(colors.length);
-  return [patternsList[patternIndex], colors[colorIndex]];
+  return patternsList[patternIndex];
 };
 
 const getRandomInt = max => {
